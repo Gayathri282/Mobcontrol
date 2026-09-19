@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0f2b20">
+  <title>Mob Control - Fun Arcade Runner</title>
+  
+  <!-- Child-Friendly Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- External Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Master Game Container -->
+  <div id="gameContainer">
+    <!-- Game Canvas -->
+    <canvas id="c"></canvas>
+
+    <!-- Mute Button -->
+    <button id="mute" aria-label="Turn sound off">🔊</button>
+
+    <!-- On-Screen Mobile Touch Steering Buttons -->
+    <div id="mobileControls" class="mobile-controls hidden">
+      <button id="leftBtn" class="touch-btn" aria-label="Steer Left">◀</button>
+      <button id="rightBtn" class="touch-btn" aria-label="Steer Right">▶</button>
+    </div>
+
+    <!-- Title & Intro Overlay -->
+    <div class="layer" id="title">
+      <div class="card fade">
+        <h1 class="wordmark"><span class="icon">🏃</span> Mob Control</h1>
+        <p class="blurb">Guide your cute mob forward! Drag or tap left and right to steer through the best gates.</p>
+        
+        <div class="controls-hint">🎮 Keys: ◄ ► / A D · Touch: Drag / Buttons</div>
+
+        <button class="btn" id="startBtn">Play Now! 🚀</button>
+        
+        <div class="legend">
+          <div class="legend-item">
+            <span class="swatch green">+</span>
+            <span class="swatch blue">×</span>
+            <span>Green & Blue add or multiply troops</span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch red">-</span>
+            <span>Red subtracts or divides troops</span>
+          </div>
+          <div class="legend-item">
+            <span class="swatch orange">⭐</span>
+            <span>Orange tolls need enough troops</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Over Overlay -->
+    <div class="layer hidden" id="over">
+      <div class="card fade" id="overCard">
+        <h2 id="overTitle">Great Try! 🎉</h2>
+        <p class="result">Your Score</p>
+        <p class="score" id="finalScore">0</p>
+        <p class="meta" id="tierLine">0 m marched · peak 0 troops</p>
+        <p class="meta last" id="bestLine">🏆 Best Record: 0</p>
+        <button class="btn btn-yellow" id="againBtn">Play Again! 🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Logic Script -->
+  <script src="game.js"></script>
+</body>
+</html>
