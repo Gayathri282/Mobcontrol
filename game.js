@@ -501,6 +501,49 @@
     }
   }
 
+  function cloneFBXModel(sourceModel) {
+    if (!sourceModel) return null;
+    var clone;
+    if (typeof THREE.SkeletonUtils !== 'undefined' && THREE.SkeletonUtils.clone) {
+      clone = THREE.SkeletonUtils.clone(sourceModel);
+    } else {
+      clone = sourceModel.clone(true);
+    }
+
+    var boneMap = {};
+    clone.traverse(function (node) {
+      if (node.isBone || node.type === 'Bone') {
+        boneMap[node.name] = node;
+      }
+    });
+
+    clone.traverse(function (node) {
+      if (node.isSkinnedMesh || node.type === 'SkinnedMesh') {
+        var oldSkeleton = node.skeleton;
+        if (oldSkeleton) {
+          var newBones = [];
+          for (var i = 0; i < oldSkeleton.bones.length; i++) {
+            var oldBone = oldSkeleton.bones[i];
+            newBones.push(boneMap[oldBone.name] || oldBone);
+          }
+          node.bind(new THREE.Skeleton(newBones, oldSkeleton.boneInverses), node.bindMatrix);
+        }
+      }
+    });
+
+    return clone;
+  }
+
+  function clear3DGatePreviews() {
+    for (var id in gate3DPreviewInstances) {
+      var list = gate3DPreviewInstances[id];
+      for (var k = 0; k < list.length; k++) {
+        if (list[k] && list[k].mesh) scene3D.remove(list[k].mesh);
+      }
+    }
+    gate3DPreviewInstances = {};
+  }
+
   function loadFBXResilient(loader, primaryPath, onSuccess, onError) {
     var pathsToTry = [
       primaryPath,
@@ -567,6 +610,7 @@
       masterPlayerModel = object;
       fbxLoaded = true;
       refreshMob3DModels();
+      clear3DGatePreviews();
       checkComplete();
     }, function (err) {
       console.error("FBX hero model loading error:", err);
@@ -582,6 +626,7 @@
       });
       object.scale.setScalar(0.025);
       masterVillainModel = object;
+      clear3DGatePreviews();
       checkComplete();
     }, function (err) {
       console.error("FBX villain model loading error:", err);
@@ -695,13 +740,7 @@
     var modelTemplate = masterPlayerModel || proceduralPlayerModel;
     if (!modelTemplate) return null;
 
-    var cloneMesh;
-    if (THREE.SkeletonUtils && THREE.SkeletonUtils.clone && masterPlayerModel) {
-      cloneMesh = THREE.SkeletonUtils.clone(modelTemplate);
-    } else {
-      cloneMesh = modelTemplate.clone(true);
-    }
-
+    var cloneMesh = cloneFBXModel(modelTemplate);
     scene3D.add(cloneMesh);
 
     var member = {
@@ -728,12 +767,7 @@
 
     var numVillains = Math.min(25, Math.max(2, Math.round(count)));
     for (var i = 0; i < numVillains; i++) {
-      var cloneMesh;
-      if (THREE.SkeletonUtils && THREE.SkeletonUtils.clone && masterVillainModel) {
-        cloneMesh = THREE.SkeletonUtils.clone(modelVillain);
-      } else {
-        cloneMesh = modelVillain.clone(true);
-      }
+      var cloneMesh = cloneFBXModel(modelVillain);
 
       var ox = (Math.random() - 0.5) * 6;
       var oz = (Math.random() - 0.5) * 4;
@@ -786,7 +820,7 @@
           var countToRender = seg.unitCount || seg.val || 2;
 
           for (var p = 0; p < countToRender; p++) {
-            var mesh = (THREE.SkeletonUtils && THREE.SkeletonUtils.clone && (seg.neg ? masterVillainModel : masterPlayerModel)) ? THREE.SkeletonUtils.clone(masterObj) : masterObj.clone(true);
+            var mesh = cloneFBXModel(masterObj);
             var itemObj = {
               mesh: mesh,
               mixer: null,
