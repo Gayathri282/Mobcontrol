@@ -502,16 +502,26 @@
   }
 
   function loadFBXResilient(loader, primaryPath, onSuccess, onError) {
-    loader.load(primaryPath, onSuccess, undefined, function (err) {
-      var altPath = primaryPath.indexOf('asset/') === 0 ? primaryPath.replace('asset/', 'assets/') : (primaryPath.indexOf('assets/') === 0 ? primaryPath.replace('assets/', 'asset/') : primaryPath);
-      if (altPath !== primaryPath) {
-        loader.load(altPath, onSuccess, undefined, function (err2) {
-          if (onError) onError(err2 || err);
-        });
-      } else if (onError) {
-        onError(err);
+    var pathsToTry = [
+      primaryPath,
+      encodeURI(primaryPath),
+      primaryPath.indexOf('asset/') === 0 ? primaryPath.replace('asset/', 'assets/') : primaryPath.replace('assets/', 'asset/'),
+      encodeURI(primaryPath.indexOf('asset/') === 0 ? primaryPath.replace('asset/', 'assets/') : primaryPath.replace('assets/', 'asset/'))
+    ];
+
+    var tryIdx = 0;
+    function attemptNext() {
+      if (tryIdx >= pathsToTry.length) {
+        if (onError) onError(new Error("Failed to load FBX: " + primaryPath));
+        return;
       }
-    });
+      var currentPath = pathsToTry[tryIdx++];
+      loader.load(currentPath, onSuccess, undefined, function (err) {
+        attemptNext();
+      });
+    }
+
+    attemptNext();
   }
 
   function loadFBXAssets() {
@@ -563,8 +573,8 @@
       checkComplete();
     });
 
-    // 2. Load 3D Villain Model
-    loadFBXResilient(loader, 'asset/villain/Warzombie F Pedroso.fbx', function (object) {
+    // 2. Load 3D Villain Model (Clean Web-Safe File Path)
+    loadFBXResilient(loader, 'asset/villain/Warzombie.fbx', function (object) {
       object.traverse(function (child) {
         if (child.isMesh) {
           applyFBXMaterial(child);
@@ -578,8 +588,8 @@
       checkComplete();
     });
 
-    // 3. Load 3D Obstacle Model (Barbwire Enemy Outpost)
-    loadFBXResilient(loader, 'asset/obstacles/Barb+wire.fbx', function (object) {
+    // 3. Load 3D Obstacle Model (Barbwire Enemy Outpost - Clean Web-Safe File Path)
+    loadFBXResilient(loader, 'asset/obstacles/Barbwire.fbx', function (object) {
       object.traverse(function (child) {
         if (child.isLight) {
           child.intensity = 0;
@@ -607,12 +617,12 @@
       checkComplete();
     });
 
-    // 4. Load Movement Animations
+    // 4. Load Movement Animations (Clean Web-Safe File Paths)
     var animFiles = [
       { name: 'run', path: 'asset/movements/running.fbx' },
       { name: 'idle', path: 'asset/movements/idle.fbx' },
-      { name: 'jump', path: 'asset/movements/jumping up.fbx' },
-      { name: 'fall', path: 'asset/movements/falling idle.fbx' }
+      { name: 'jump', path: 'asset/movements/jumping_up.fbx' },
+      { name: 'fall', path: 'asset/movements/falling_idle.fbx' }
     ];
 
     animFiles.forEach(function (anim) {
