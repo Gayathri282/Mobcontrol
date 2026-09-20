@@ -457,7 +457,7 @@
   function attachMixerToInstance(inst, isVillain) {
     if (!inst || !inst.mesh) return;
     var clipSet = isVillain ? villainAnimClips : heroAnimClips;
-    if (Object.keys(clipSet).length === 0) return;
+    if (!clipSet || Object.keys(clipSet).length === 0) return;
 
     if (!inst.mixer) {
       inst.mixer = new THREE.AnimationMixer(inst.mesh);
@@ -465,19 +465,20 @@
     inst.actions = {};
     for (var animName in clipSet) {
       var clip = clipSet[animName];
-      var action = inst.mixer.clipAction(clip);
-      action.loop = THREE.LoopRepeat;
-      inst.actions[animName] = action;
+      if (clip) {
+        var action = inst.mixer.clipAction(clip);
+        action.loop = THREE.LoopRepeat;
+        inst.actions[animName] = action;
+      }
     }
-    // Fallback left & right turns to running animation if specific turn clips aren't separate
     if (!inst.actions['left'] && inst.actions['run']) inst.actions['left'] = inst.actions['run'];
     if (!inst.actions['right'] && inst.actions['run']) inst.actions['right'] = inst.actions['run'];
 
     var cur = inst.currentAction || ((state === STATE_TITLE) ? 'idle' : (state === STATE_OVER ? 'fall' : 'run'));
-    if (inst.actions[cur]) {
-      inst.actions[cur].play();
-    } else if (inst.actions['run']) {
-      inst.actions['run'].play();
+    var targetAct = inst.actions[cur] || inst.actions['run'] || inst.actions['idle'];
+    if (targetAct) {
+      targetAct.reset().play();
+      inst.currentAction = cur;
     }
   }
 
@@ -492,10 +493,9 @@
       }
     }
 
-    // Retroactively attach mixers and actions to all currently active 3D character instances!
-    for (var i = 0; i < mob3DInstances.length; i++) {
-      attachMixerToInstance(mob3DInstances[i], false);
-    }
+    refreshMob3DModels();
+    clear3DGatePreviews();
+
     for (var v = 0; v < villain3DInstances.length; v++) {
       attachMixerToInstance(villain3DInstances[v], true);
     }
@@ -917,16 +917,22 @@
     fadeTime = fadeTime || 0.18;
 
     var prevAction = inst.actions[inst.currentAction];
-    var nextAction = inst.actions[animName];
+    var nextAction = inst.actions[animName] || inst.actions['run'];
 
-    // If next action is missing or identical to current active action, return to prevent loop resets
-    if (!nextAction || prevAction === nextAction) {
-      if (nextAction) inst.currentAction = animName;
+    if (!nextAction) return;
+
+    if (prevAction === nextAction && nextAction.isRunning()) {
+      inst.currentAction = animName;
       return;
     }
 
-    if (prevAction) prevAction.fadeOut(fadeTime);
-    nextAction.reset().fadeIn(fadeTime).play();
+    if (prevAction && prevAction !== nextAction) {
+      prevAction.fadeOut(fadeTime);
+    }
+
+    if (!nextAction.isRunning()) {
+      nextAction.reset().fadeIn(fadeTime).play();
+    }
     inst.currentAction = animName;
   }
 
