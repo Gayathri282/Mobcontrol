@@ -18,17 +18,10 @@
 
   <!-- Master Game Container -->
   <div id="gameContainer">
-    <!-- Game Canvas -->
+    <!-- Game Canvases (3D WebGL + 2D Overlay) -->
+    <canvas id="glCanvas"></canvas>
     <canvas id="c"></canvas>
 
-    <!-- Mute Button -->
-    <button id="mute" aria-label="Turn sound off">🔊</button>
-
-    <!-- On-Screen Mobile Touch Steering Buttons -->
-    <div id="mobileControls" class="mobile-controls hidden">
-      <button id="leftBtn" class="touch-btn" aria-label="Steer Left">◀</button>
-      <button id="rightBtn" class="touch-btn" aria-label="Steer Right">▶</button>
-    </div>
 
     <!-- Title & Intro Overlay -->
     <div class="layer" id="title">
@@ -36,25 +29,9 @@
         <h1 class="wordmark"><span class="icon">🏃</span> Mob Control</h1>
         <p class="blurb">Guide your cute mob forward! Drag or tap left and right to steer through the best gates.</p>
         
-        <div class="controls-hint">🎮 Keys: ◄ ► / A D · Touch: Drag / Buttons</div>
+        <div class="controls-hint">🎮 Keys: ◄ ► / A D · Touch: Drag to steer</div>
 
         <button class="btn" id="startBtn">Play Now! 🚀</button>
-        
-        <div class="legend">
-          <div class="legend-item">
-            <span class="swatch green">+</span>
-            <span class="swatch blue">×</span>
-            <span>Green & Blue add or multiply troops</span>
-          </div>
-          <div class="legend-item">
-            <span class="swatch red">-</span>
-            <span>Red subtracts or divides troops</span>
-          </div>
-          <div class="legend-item">
-            <span class="swatch orange">⭐</span>
-            <span>Orange tolls need enough troops</span>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -70,6 +47,12 @@
       </div>
     </div>
   </div>
+
+  <!-- Three.js 3D Engine & FBX Loader Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
 
   <!-- Game Logic Script -->
   <script src="game.js"></script>
